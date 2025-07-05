@@ -1,0 +1,7 @@
+backend-infra/**
+cdk/**
+cloudformation/**
+frontend-infra/**
+*.md
+.git/**
+.gitignore
