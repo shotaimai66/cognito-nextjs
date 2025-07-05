@@ -1,0 +1,135 @@
+{
+ "Description": "Route 53 Hosted Zone and SSL Certificates for custom domain",
+ "Resources": {
+  "HostedZoneDB99F866": {
+   "Type": "AWS::Route53::HostedZone",
+   "Properties": {
+    "HostedZoneConfig": {
+     "Comment": "Hosted zone for xxxxxxxx.tech"
+    },
+    "Name": "xxxxxxxx.tech."
+   },
+   "Metadata": {
+    "aws:cdk:path": "Route53Stack/HostedZone/Resource"
+   }
+  },
+  "Certificate4E7ABB08": {
+   "Type": "AWS::CertificateManager::Certificate",
+   "Properties": {
+    "DomainName": "xxxxxxxx.tech",
+    "DomainValidationOptions": [
+     {
+      "DomainName": "xxxxxxxx.tech",
+      "HostedZoneId": {
+       "Ref": "HostedZoneDB99F866"
+      }
+     }
+    ],
+    "SubjectAlternativeNames": [
+     "*.xxxxxxxx.tech"
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "Route53Stack/Certificate"
+     }
+    ],
+    "ValidationMethod": "DNS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "Route53Stack/Certificate/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/03KsQ7CIBSF4WfpDlekcXDu4maim4tBuDW3tWDg0g6Ed9fGoU4n/5ejQasWVGOWJK0b5YseUK5s7Ci+dC8xZMZDC+UUEqO7BY+i6/1WVViMTD1ZwzgZb54YoXSbrfe/rHWFc+Z35ip8cAhD2s1awf4IuhkSkYzZM00Il99+APURREykAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "Route53Stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "NameServers": {
+   "Description": "Name servers for the hosted zone. Set these in your domain registrar.",
+   "Value": {
+    "Fn::Join": [
+     ", ",
+     {
+      "Fn::GetAtt": [
+       "HostedZoneDB99F866",
+       "NameServers"
+      ]
+     }
+    ]
+   }
+  },
+  "DomainName": {
+   "Description": "The custom domain name",
+   "Value": "xxxxxxxx.tech"
+  },
+  "HostedZoneId": {
+   "Description": "The hosted zone ID",
+   "Value": {
+    "Ref": "HostedZoneDB99F866"
+   }
+  },
+  "CertificateArn": {
+   "Description": "The certificate ARN for ALB",
+   "Value": {
+    "Ref": "Certificate4E7ABB08"
+   }
+  },
+  "ExportsOutputRefCertificate4E7ABB08F7C8AF50": {
+   "Value": {
+    "Ref": "Certificate4E7ABB08"
+   },
+   "Export": {
+    "Name": "Route53Stack:ExportsOutputRefCertificate4E7ABB08F7C8AF50"
+   }
+  },
+  "ExportsOutputRefHostedZoneDB99F8662BBAE844": {
+   "Value": {
+    "Ref": "HostedZoneDB99F866"
+   },
+   "Export": {
+    "Name": "Route53Stack:ExportsOutputRefHostedZoneDB99F8662BBAE844"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

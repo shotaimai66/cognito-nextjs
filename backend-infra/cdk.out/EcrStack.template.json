@@ -1,0 +1,150 @@
+{
+ "Description": "ECR repository for Django backend Docker images",
+ "Resources": {
+  "DjangoRepositoryC2C23DB6": {
+   "Type": "AWS::ECR::Repository",
+   "Properties": {
+    "ImageScanningConfiguration": {
+     "ScanOnPush": true
+    },
+    "ImageTagMutability": "MUTABLE",
+    "LifecyclePolicy": {
+     "LifecyclePolicyText": "{\"rules\":[{\"rulePriority\":1,\"description\":\"Remove old images\",\"selection\":{\"tagStatus\":\"any\",\"countType\":\"imageCountMoreThan\",\"countNumber\":10},\"action\":{\"type\":\"expire\"}}]}"
+    },
+    "RepositoryName": "django-backend"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EcrStack/DjangoRepository/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSMzIw1jNQTCwv1k1OydbNyUzSqw4uSUzO1gEKxacmF+lVB6UW5BdnluQXVeo4p+UheLUgrn9pSUFpSa1OXn5Kql5WsX6ZkYGeoaWekWJWcWamblFpXklmbqpeEIQGAFyqy9xuAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcrStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "EcrRepositoryUri": {
+   "Description": "ECR Repository URI",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Fn::Select": [
+        4,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "DjangoRepositoryC2C23DB6",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".dkr.ecr.",
+      {
+       "Fn::Select": [
+        3,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "DjangoRepositoryC2C23DB6",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "DjangoRepositoryC2C23DB6"
+      }
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "EcrStack-EcrRepositoryUri"
+   }
+  },
+  "EcrRepositoryName": {
+   "Description": "ECR Repository Name",
+   "Value": {
+    "Ref": "DjangoRepositoryC2C23DB6"
+   },
+   "Export": {
+    "Name": "EcrStack-EcrRepositoryName"
+   }
+  },
+  "ExportsOutputFnGetAttDjangoRepositoryC2C23DB6Arn96955558": {
+   "Value": {
+    "Fn::GetAtt": [
+     "DjangoRepositoryC2C23DB6",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "EcrStack:ExportsOutputFnGetAttDjangoRepositoryC2C23DB6Arn96955558"
+   }
+  },
+  "ExportsOutputRefDjangoRepositoryC2C23DB6D9EBE1D3": {
+   "Value": {
+    "Ref": "DjangoRepositoryC2C23DB6"
+   },
+   "Export": {
+    "Name": "EcrStack:ExportsOutputRefDjangoRepositoryC2C23DB6D9EBE1D3"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

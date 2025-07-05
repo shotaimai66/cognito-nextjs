@@ -1,0 +1,707 @@
+{
+ "Description": "ECS Fargate service for Django backend application",
+ "Resources": {
+  "DjangoClusterF5CCF78E": {
+   "Type": "AWS::ECS::Cluster",
+   "Properties": {
+    "ClusterName": "django-cluster",
+    "ClusterSettings": [
+     {
+      "Name": "containerInsights",
+      "Value": "enabled"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoCluster/Resource"
+   }
+  },
+  "DjangoALBCAFDD2A3": {
+   "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+   "Properties": {
+    "LoadBalancerAttributes": [
+     {
+      "Key": "deletion_protection.enabled",
+      "Value": "false"
+     }
+    ],
+    "Name": "django-alb",
+    "Scheme": "internet-facing",
+    "SecurityGroups": [
+     {
+      "Fn::ImportValue": "VpcStack:ExportsOutputFnGetAttAlbSecurityGroup86A59E99GroupIdE3A37BC7"
+     }
+    ],
+    "Subnets": [
+     {
+      "Fn::ImportValue": "VpcStack:ExportsOutputRefDjangoVpcPublicSubnet1SubnetCB930176DF896231"
+     },
+     {
+      "Fn::ImportValue": "VpcStack:ExportsOutputRefDjangoVpcPublicSubnet2Subnet2911EA141A33161A"
+     }
+    ],
+    "Type": "application"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoALB/Resource"
+   }
+  },
+  "DjangoALBDjangoListenerAAB3BC4D": {
+   "Type": "AWS::ElasticLoadBalancingV2::Listener",
+   "Properties": {
+    "DefaultActions": [
+     {
+      "RedirectConfig": {
+       "Port": "443",
+       "Protocol": "HTTPS",
+       "StatusCode": "HTTP_301"
+      },
+      "Type": "redirect"
+     }
+    ],
+    "LoadBalancerArn": {
+     "Ref": "DjangoALBCAFDD2A3"
+    },
+    "Port": 80,
+    "Protocol": "HTTP"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoALB/DjangoListener/Resource"
+   }
+  },
+  "DjangoALBDjangoListenerHTTPS06F692C4": {
+   "Type": "AWS::ElasticLoadBalancingV2::Listener",
+   "Properties": {
+    "Certificates": [
+     {
+      "CertificateArn": {
+       "Fn::ImportValue": "Route53Stack:ExportsOutputRefCertificate4E7ABB08F7C8AF50"
+      }
+     }
+    ],
+    "DefaultActions": [
+     {
+      "TargetGroupArn": {
+       "Ref": "DjangoTargetGroup3F9AE780"
+      },
+      "Type": "forward"
+     }
+    ],
+    "LoadBalancerArn": {
+     "Ref": "DjangoALBCAFDD2A3"
+    },
+    "Port": 443,
+    "Protocol": "HTTPS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoALB/DjangoListenerHTTPS/Resource"
+   }
+  },
+  "DjangoTargetGroup3F9AE780": {
+   "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+   "Properties": {
+    "HealthCheckEnabled": true,
+    "HealthCheckIntervalSeconds": 30,
+    "HealthCheckPath": "/health/",
+    "HealthCheckTimeoutSeconds": 5,
+    "HealthyThresholdCount": 2,
+    "Matcher": {
+     "HttpCode": "200"
+    },
+    "Port": 8000,
+    "Protocol": "HTTP",
+    "TargetGroupAttributes": [
+     {
+      "Key": "stickiness.enabled",
+      "Value": "false"
+     }
+    ],
+    "TargetType": "ip",
+    "UnhealthyThresholdCount": 5,
+    "VpcId": {
+     "Fn::ImportValue": "VpcStack:ExportsOutputRefDjangoVpcB951F8F6D6BAD311"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoTargetGroup/Resource"
+   }
+  },
+  "DjangoLogGroup3D6AC872": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": "/ecs/django-backend",
+    "RetentionInDays": 7
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoLogGroup/Resource"
+   }
+  },
+  "DjangoTaskRole5D017777": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "Role for Django ECS tasks"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoTaskRole/Resource"
+   }
+  },
+  "DjangoTaskRoleDefaultPolicy89E51BB1": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminInitiateAuth",
+        "cognito-idp:ConfirmSignUp",
+        "cognito-idp:GetUser",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
+        "cognito-idp:SignUp"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "CognitoAuthStack:ExportsOutputFnGetAttUserPool6BA7E5F2Arn686ACC00"
+       }
+      },
+      {
+       "Action": [
+        "logs:CreateLogStream",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:PutLogEvents",
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DjangoTaskRoleDefaultPolicy89E51BB1",
+    "Roles": [
+     {
+      "Ref": "DjangoTaskRole5D017777"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoTaskRole/DefaultPolicy/Resource"
+   }
+  },
+  "DjangoExecutionRoleBB5840A7": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoExecutionRole/Resource"
+   }
+  },
+  "DjangoExecutionRoleDefaultPolicy61BB3186": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttDjangoRepositoryC2C23DB6Arn96955558"
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DjangoLogGroup3D6AC872",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DjangoExecutionRoleDefaultPolicy61BB3186",
+    "Roles": [
+     {
+      "Ref": "DjangoExecutionRoleBB5840A7"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoExecutionRole/DefaultPolicy/Resource"
+   }
+  },
+  "DjangoTaskDefinitionA1B68D68": {
+   "Type": "AWS::ECS::TaskDefinition",
+   "Properties": {
+    "ContainerDefinitions": [
+     {
+      "Environment": [
+       {
+        "Name": "DJANGO_SETTINGS_MODULE",
+        "Value": "config.settings.production"
+       },
+       {
+        "Name": "PORT",
+        "Value": "8000"
+       },
+       {
+        "Name": "COGNITO_REGION",
+        "Value": "ap-northeast-1"
+       },
+       {
+        "Name": "COGNITO_USER_POOL_ID",
+        "Value": {
+         "Fn::ImportValue": "CognitoAuthStack:ExportsOutputRefUserPool6BA7E5F296FD7236"
+        }
+       },
+       {
+        "Name": "COGNITO_CLIENT_ID",
+        "Value": {
+         "Fn::ImportValue": "CognitoAuthStack:ExportsOutputRefUserPoolClient2F5918F753847A55"
+        }
+       },
+       {
+        "Name": "FRONTEND_URL",
+        "Value": "https://xxxxxxxx.tech"
+       },
+       {
+        "Name": "ALLOWED_HOSTS",
+        "Value": "api.xxxxxxxx.tech"
+       }
+      ],
+      "Essential": true,
+      "HealthCheck": {
+       "Command": [
+        "CMD-SHELL",
+        "curl -f http://localhost:8000/health/ || exit 1"
+       ],
+       "Interval": 30,
+       "Retries": 3,
+       "StartPeriod": 60,
+       "Timeout": 5
+      },
+      "Image": {
+       "Fn::Join": [
+        "",
+        [
+         {
+          "Fn::Select": [
+           4,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttDjangoRepositoryC2C23DB6Arn96955558"
+             }
+            ]
+           }
+          ]
+         },
+         ".dkr.ecr.",
+         {
+          "Fn::Select": [
+           3,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::ImportValue": "EcrStack:ExportsOutputFnGetAttDjangoRepositoryC2C23DB6Arn96955558"
+             }
+            ]
+           }
+          ]
+         },
+         ".",
+         {
+          "Ref": "AWS::URLSuffix"
+         },
+         "/",
+         {
+          "Fn::ImportValue": "EcrStack:ExportsOutputRefDjangoRepositoryC2C23DB6D9EBE1D3"
+         },
+         ":latest"
+        ]
+       ]
+      },
+      "LogConfiguration": {
+       "LogDriver": "awslogs",
+       "Options": {
+        "awslogs-group": {
+         "Ref": "DjangoLogGroup3D6AC872"
+        },
+        "awslogs-stream-prefix": "django",
+        "awslogs-region": "ap-northeast-1"
+       }
+      },
+      "Name": "django-backend",
+      "PortMappings": [
+       {
+        "ContainerPort": 8000,
+        "Protocol": "tcp"
+       }
+      ]
+     }
+    ],
+    "Cpu": "512",
+    "ExecutionRoleArn": {
+     "Fn::GetAtt": [
+      "DjangoExecutionRoleBB5840A7",
+      "Arn"
+     ]
+    },
+    "Family": "django-backend",
+    "Memory": "1024",
+    "NetworkMode": "awsvpc",
+    "RequiresCompatibilities": [
+     "FARGATE"
+    ],
+    "TaskRoleArn": {
+     "Fn::GetAtt": [
+      "DjangoTaskRole5D017777",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoTaskDefinition/Resource"
+   }
+  },
+  "DjangoServiceD3AAF77D": {
+   "Type": "AWS::ECS::Service",
+   "Properties": {
+    "Cluster": {
+     "Ref": "DjangoClusterF5CCF78E"
+    },
+    "DeploymentConfiguration": {
+     "Alarms": {
+      "AlarmNames": [],
+      "Enable": false,
+      "Rollback": false
+     },
+     "MaximumPercent": 200,
+     "MinimumHealthyPercent": 50
+    },
+    "DesiredCount": 2,
+    "EnableECSManagedTags": false,
+    "EnableExecuteCommand": true,
+    "HealthCheckGracePeriodSeconds": 60,
+    "LaunchType": "FARGATE",
+    "LoadBalancers": [
+     {
+      "ContainerName": "django-backend",
+      "ContainerPort": 8000,
+      "TargetGroupArn": {
+       "Ref": "DjangoTargetGroup3F9AE780"
+      }
+     }
+    ],
+    "NetworkConfiguration": {
+     "AwsvpcConfiguration": {
+      "AssignPublicIp": "DISABLED",
+      "SecurityGroups": [
+       {
+        "Fn::ImportValue": "VpcStack:ExportsOutputFnGetAttEcsSecurityGroup44008BF1GroupIdDE2CA5C5"
+       }
+      ],
+      "Subnets": [
+       {
+        "Fn::ImportValue": "VpcStack:ExportsOutputRefDjangoVpcPrivateSubnet1Subnet63EC1A7941157CEC"
+       },
+       {
+        "Fn::ImportValue": "VpcStack:ExportsOutputRefDjangoVpcPrivateSubnet2Subnet66EAD026C7AA239D"
+       }
+      ]
+     }
+    },
+    "PlatformVersion": "LATEST",
+    "ServiceName": "django-backend-service",
+    "TaskDefinition": {
+     "Ref": "DjangoTaskDefinitionA1B68D68"
+    }
+   },
+   "DependsOn": [
+    "DjangoALBDjangoListenerHTTPS06F692C4",
+    "DjangoTaskRoleDefaultPolicy89E51BB1",
+    "DjangoTaskRole5D017777"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoService/Service"
+   }
+  },
+  "DjangoServiceTaskCountTarget443B2910": {
+   "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+   "Properties": {
+    "MaxCapacity": 10,
+    "MinCapacity": 2,
+    "ResourceId": {
+     "Fn::Join": [
+      "",
+      [
+       "service/",
+       {
+        "Ref": "DjangoClusterF5CCF78E"
+       },
+       "/",
+       {
+        "Fn::GetAtt": [
+         "DjangoServiceD3AAF77D",
+         "Name"
+        ]
+       }
+      ]
+     ]
+    },
+    "RoleARN": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":iam::017522386375:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+      ]
+     ]
+    },
+    "ScalableDimension": "ecs:service:DesiredCount",
+    "ServiceNamespace": "ecs"
+   },
+   "DependsOn": [
+    "DjangoTaskRoleDefaultPolicy89E51BB1",
+    "DjangoTaskRole5D017777"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoService/TaskCount/Target/Resource"
+   }
+  },
+  "DjangoServiceTaskCountTargetDjangoCpuScalingBFDD3F4F": {
+   "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+   "Properties": {
+    "PolicyName": "EcsDjangoStackDjangoServiceTaskCountTargetDjangoCpuScaling7E567189",
+    "PolicyType": "TargetTrackingScaling",
+    "ScalingTargetId": {
+     "Ref": "DjangoServiceTaskCountTarget443B2910"
+    },
+    "TargetTrackingScalingPolicyConfiguration": {
+     "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+     },
+     "ScaleInCooldown": 300,
+     "ScaleOutCooldown": 120,
+     "TargetValue": 70
+    }
+   },
+   "DependsOn": [
+    "DjangoTaskRoleDefaultPolicy89E51BB1",
+    "DjangoTaskRole5D017777"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoService/TaskCount/Target/DjangoCpuScaling/Resource"
+   }
+  },
+  "DjangoServiceTaskCountTargetDjangoMemoryScaling58F767AF": {
+   "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+   "Properties": {
+    "PolicyName": "EcsDjangoStackDjangoServiceTaskCountTargetDjangoMemoryScalingE761AE1F",
+    "PolicyType": "TargetTrackingScaling",
+    "ScalingTargetId": {
+     "Ref": "DjangoServiceTaskCountTarget443B2910"
+    },
+    "TargetTrackingScalingPolicyConfiguration": {
+     "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageMemoryUtilization"
+     },
+     "ScaleInCooldown": 300,
+     "ScaleOutCooldown": 120,
+     "TargetValue": 80
+    }
+   },
+   "DependsOn": [
+    "DjangoTaskRoleDefaultPolicy89E51BB1",
+    "DjangoTaskRole5D017777"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoService/TaskCount/Target/DjangoMemoryScaling/Resource"
+   }
+  },
+  "DjangoAPIARecordFE4B1976": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::Join": [
+       "",
+       [
+        "dualstack.",
+        {
+         "Fn::GetAtt": [
+          "DjangoALBCAFDD2A3",
+          "DNSName"
+         ]
+        }
+       ]
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::GetAtt": [
+       "DjangoALBCAFDD2A3",
+       "CanonicalHostedZoneID"
+      ]
+     }
+    },
+    "HostedZoneId": {
+     "Fn::ImportValue": "Route53Stack:ExportsOutputRefHostedZoneDB99F8662BBAE844"
+    },
+    "Name": "api.xxxxxxxx.tech.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/DjangoAPIARecord/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/11Ry07DMBD8lt5dU1Jx4AhFcKkESnpHW2cbbevakR9FKPK/s7GbPjjt7NMz40pWi6VczODHz1V7mGvayqEJoA6CS98DKi+HlY4+oBOrnZngO7gOAm7AH95wR4YCWTMO/K9YE4AMupvaebdBdyKF49IEGwUatjqfXdloQhKowQdS2kK75aZRZLpTJYeXvtekYDy45t5r7hWOd/ntHDF1c56Z8E1/w7wwfDgb+6LkkiahbcdGrG13aU84CYKjHGqrs5Qcvyzf/B3TgpKA6zMQg/UslIWw1RfF42PZi/tKCRvHP8ILTdm73r8rJMGEAj4t2Z4alXVtZpRRgyElUaO30RXTP2PoIztsbIty7x9O1UI+PstqtvdEc8fu0xFlXeIfvYnz2ygCAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "EcsDjangoStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "LoadBalancerDNS": {
+   "Description": "Application Load Balancer DNS name",
+   "Value": {
+    "Fn::GetAtt": [
+     "DjangoALBCAFDD2A3",
+     "DNSName"
+    ]
+   },
+   "Export": {
+    "Name": "EcsDjangoStack-LoadBalancerDNS"
+   }
+  },
+  "LoadBalancerURL": {
+   "Description": "Application Load Balancer URL",
+   "Value": "https://api.xxxxxxxx.tech",
+   "Export": {
+    "Name": "EcsDjangoStack-LoadBalancerURL"
+   }
+  },
+  "ClusterName": {
+   "Description": "ECS Cluster Name",
+   "Value": {
+    "Ref": "DjangoClusterF5CCF78E"
+   },
+   "Export": {
+    "Name": "EcsDjangoStack-ClusterName"
+   }
+  },
+  "ServiceName": {
+   "Description": "ECS Service Name",
+   "Value": {
+    "Fn::GetAtt": [
+     "DjangoServiceD3AAF77D",
+     "Name"
+    ]
+   },
+   "Export": {
+    "Name": "EcsDjangoStack-ServiceName"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

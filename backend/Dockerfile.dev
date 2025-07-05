@@ -1,0 +1,27 @@
+# 開発環境用Dockerfile
+FROM node:18-alpine
+
+# 作業ディレクトリの設定
+WORKDIR /app
+
+# 開発に必要なツールをインストール
+RUN apk add --no-cache \
+    curl \
+    git \
+    bash
+
+# package.jsonとpackage-lock.jsonをコピー
+COPY package*.json ./
+
+# 開発依存関係を含むすべての依存関係をインストール
+RUN npm ci
+
+# アプリケーションコードをコピー
+# 開発環境ではボリュームマウントするため、初期セットアップ時のみ必要
+COPY . .
+
+# 開発サーバー用のポート
+EXPOSE 3001
+
+# nodemonを使用してホットリロードを有効化
+CMD ["npm", "run", "dev"]

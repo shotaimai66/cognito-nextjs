@@ -1,0 +1,783 @@
+{
+ "Description": "VPC and networking infrastructure for Django application",
+ "Resources": {
+  "DjangoVpcB951F8F6": {
+   "Type": "AWS::EC2::VPC",
+   "Properties": {
+    "CidrBlock": "10.0.0.0/16",
+    "EnableDnsHostnames": true,
+    "EnableDnsSupport": true,
+    "InstanceTenancy": "default",
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "django-app-vpc"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/Resource"
+   }
+  },
+  "DjangoVpcPublicSubnet1SubnetCB930176": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "ap-northeast-1a",
+    "CidrBlock": "10.0.0.0/24",
+    "MapPublicIpOnLaunch": true,
+    "Tags": [
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "Public"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Public"
+     },
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet1/Subnet"
+   }
+  },
+  "DjangoVpcPublicSubnet1RouteTable61580FDD": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet1/RouteTable"
+   }
+  },
+  "DjangoVpcPublicSubnet1RouteTableAssociation9DC25351": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "DjangoVpcPublicSubnet1RouteTable61580FDD"
+    },
+    "SubnetId": {
+     "Ref": "DjangoVpcPublicSubnet1SubnetCB930176"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet1/RouteTableAssociation"
+   }
+  },
+  "DjangoVpcPublicSubnet1DefaultRoute115C89B3": {
+   "Type": "AWS::EC2::Route",
+   "Properties": {
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "GatewayId": {
+     "Ref": "DjangoVpcIGW3039990F"
+    },
+    "RouteTableId": {
+     "Ref": "DjangoVpcPublicSubnet1RouteTable61580FDD"
+    }
+   },
+   "DependsOn": [
+    "DjangoVpcVPCGWFD304E8B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet1/DefaultRoute"
+   }
+  },
+  "DjangoVpcPublicSubnet1EIPE330294B": {
+   "Type": "AWS::EC2::EIP",
+   "Properties": {
+    "Domain": "vpc",
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet1"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet1/EIP"
+   }
+  },
+  "DjangoVpcPublicSubnet1NATGateway58FF065E": {
+   "Type": "AWS::EC2::NatGateway",
+   "Properties": {
+    "AllocationId": {
+     "Fn::GetAtt": [
+      "DjangoVpcPublicSubnet1EIPE330294B",
+      "AllocationId"
+     ]
+    },
+    "SubnetId": {
+     "Ref": "DjangoVpcPublicSubnet1SubnetCB930176"
+    },
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet1"
+     }
+    ]
+   },
+   "DependsOn": [
+    "DjangoVpcPublicSubnet1DefaultRoute115C89B3",
+    "DjangoVpcPublicSubnet1RouteTableAssociation9DC25351"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet1/NATGateway"
+   }
+  },
+  "DjangoVpcPublicSubnet2Subnet2911EA14": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "ap-northeast-1c",
+    "CidrBlock": "10.0.1.0/24",
+    "MapPublicIpOnLaunch": true,
+    "Tags": [
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "Public"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Public"
+     },
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet2/Subnet"
+   }
+  },
+  "DjangoVpcPublicSubnet2RouteTableD20CD085": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet2/RouteTable"
+   }
+  },
+  "DjangoVpcPublicSubnet2RouteTableAssociationA79139D3": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "DjangoVpcPublicSubnet2RouteTableD20CD085"
+    },
+    "SubnetId": {
+     "Ref": "DjangoVpcPublicSubnet2Subnet2911EA14"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet2/RouteTableAssociation"
+   }
+  },
+  "DjangoVpcPublicSubnet2DefaultRoute54D99803": {
+   "Type": "AWS::EC2::Route",
+   "Properties": {
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "GatewayId": {
+     "Ref": "DjangoVpcIGW3039990F"
+    },
+    "RouteTableId": {
+     "Ref": "DjangoVpcPublicSubnet2RouteTableD20CD085"
+    }
+   },
+   "DependsOn": [
+    "DjangoVpcVPCGWFD304E8B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet2/DefaultRoute"
+   }
+  },
+  "DjangoVpcPublicSubnet2EIP342CC473": {
+   "Type": "AWS::EC2::EIP",
+   "Properties": {
+    "Domain": "vpc",
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet2"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet2/EIP"
+   }
+  },
+  "DjangoVpcPublicSubnet2NATGatewayD09BCE38": {
+   "Type": "AWS::EC2::NatGateway",
+   "Properties": {
+    "AllocationId": {
+     "Fn::GetAtt": [
+      "DjangoVpcPublicSubnet2EIP342CC473",
+      "AllocationId"
+     ]
+    },
+    "SubnetId": {
+     "Ref": "DjangoVpcPublicSubnet2Subnet2911EA14"
+    },
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PublicSubnet2"
+     }
+    ]
+   },
+   "DependsOn": [
+    "DjangoVpcPublicSubnet2DefaultRoute54D99803",
+    "DjangoVpcPublicSubnet2RouteTableAssociationA79139D3"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PublicSubnet2/NATGateway"
+   }
+  },
+  "DjangoVpcPrivateSubnet1Subnet63EC1A79": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "ap-northeast-1a",
+    "CidrBlock": "10.0.2.0/24",
+    "MapPublicIpOnLaunch": false,
+    "Tags": [
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "Private"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Private"
+     },
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PrivateSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet1/Subnet"
+   }
+  },
+  "DjangoVpcPrivateSubnet1RouteTable919DAFE4": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PrivateSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet1/RouteTable"
+   }
+  },
+  "DjangoVpcPrivateSubnet1RouteTableAssociation86EB1EF9": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "DjangoVpcPrivateSubnet1RouteTable919DAFE4"
+    },
+    "SubnetId": {
+     "Ref": "DjangoVpcPrivateSubnet1Subnet63EC1A79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet1/RouteTableAssociation"
+   }
+  },
+  "DjangoVpcPrivateSubnet1DefaultRoute02F8D33F": {
+   "Type": "AWS::EC2::Route",
+   "Properties": {
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "NatGatewayId": {
+     "Ref": "DjangoVpcPublicSubnet1NATGateway58FF065E"
+    },
+    "RouteTableId": {
+     "Ref": "DjangoVpcPrivateSubnet1RouteTable919DAFE4"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet1/DefaultRoute"
+   }
+  },
+  "DjangoVpcPrivateSubnet2Subnet66EAD026": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "ap-northeast-1c",
+    "CidrBlock": "10.0.3.0/24",
+    "MapPublicIpOnLaunch": false,
+    "Tags": [
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "Private"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Private"
+     },
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PrivateSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet2/Subnet"
+   }
+  },
+  "DjangoVpcPrivateSubnet2RouteTableCB1F1FA7": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "VpcStack/DjangoVpc/PrivateSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet2/RouteTable"
+   }
+  },
+  "DjangoVpcPrivateSubnet2RouteTableAssociation7CBA549F": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "DjangoVpcPrivateSubnet2RouteTableCB1F1FA7"
+    },
+    "SubnetId": {
+     "Ref": "DjangoVpcPrivateSubnet2Subnet66EAD026"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet2/RouteTableAssociation"
+   }
+  },
+  "DjangoVpcPrivateSubnet2DefaultRoute4B72EB18": {
+   "Type": "AWS::EC2::Route",
+   "Properties": {
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "NatGatewayId": {
+     "Ref": "DjangoVpcPublicSubnet2NATGatewayD09BCE38"
+    },
+    "RouteTableId": {
+     "Ref": "DjangoVpcPrivateSubnet2RouteTableCB1F1FA7"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/PrivateSubnet2/DefaultRoute"
+   }
+  },
+  "DjangoVpcIGW3039990F": {
+   "Type": "AWS::EC2::InternetGateway",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "django-app-vpc"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/IGW"
+   }
+  },
+  "DjangoVpcVPCGWFD304E8B": {
+   "Type": "AWS::EC2::VPCGatewayAttachment",
+   "Properties": {
+    "InternetGatewayId": {
+     "Ref": "DjangoVpcIGW3039990F"
+    },
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/VPCGW"
+   }
+  },
+  "DjangoVpcS3Endpoint1A8F8526": {
+   "Type": "AWS::EC2::VPCEndpoint",
+   "Properties": {
+    "RouteTableIds": [
+     {
+      "Ref": "DjangoVpcPrivateSubnet1RouteTable919DAFE4"
+     },
+     {
+      "Ref": "DjangoVpcPrivateSubnet2RouteTableCB1F1FA7"
+     },
+     {
+      "Ref": "DjangoVpcPublicSubnet1RouteTable61580FDD"
+     },
+     {
+      "Ref": "DjangoVpcPublicSubnet2RouteTableD20CD085"
+     }
+    ],
+    "ServiceName": {
+     "Fn::Join": [
+      "",
+      [
+       "com.amazonaws.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".s3"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "django-app-vpc"
+     }
+    ],
+    "VpcEndpointType": "Gateway",
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/S3Endpoint/Resource"
+   }
+  },
+  "DjangoVpcDynamoDbEndpointEF6A1DE3": {
+   "Type": "AWS::EC2::VPCEndpoint",
+   "Properties": {
+    "RouteTableIds": [
+     {
+      "Ref": "DjangoVpcPrivateSubnet1RouteTable919DAFE4"
+     },
+     {
+      "Ref": "DjangoVpcPrivateSubnet2RouteTableCB1F1FA7"
+     },
+     {
+      "Ref": "DjangoVpcPublicSubnet1RouteTable61580FDD"
+     },
+     {
+      "Ref": "DjangoVpcPublicSubnet2RouteTableD20CD085"
+     }
+    ],
+    "ServiceName": {
+     "Fn::Join": [
+      "",
+      [
+       "com.amazonaws.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".dynamodb"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "django-app-vpc"
+     }
+    ],
+    "VpcEndpointType": "Gateway",
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/DjangoVpc/DynamoDbEndpoint/Resource"
+   }
+  },
+  "AlbSecurityGroup86A59E99": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "Security group for Application Load Balancer",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "SecurityGroupIngress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow HTTP traffic",
+      "FromPort": 80,
+      "IpProtocol": "tcp",
+      "ToPort": 80
+     },
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow HTTPS traffic",
+      "FromPort": 443,
+      "IpProtocol": "tcp",
+      "ToPort": 443
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/AlbSecurityGroup/Resource"
+   }
+  },
+  "EcsSecurityGroup44008BF1": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "Security group for ECS tasks",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DjangoVpcB951F8F6"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/EcsSecurityGroup/Resource"
+   }
+  },
+  "EcsSecurityGroupfromVpcStackAlbSecurityGroupCE60AE768000C1E4A2E1": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "Allow traffic from ALB",
+    "FromPort": 8000,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "EcsSecurityGroup44008BF1",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "AlbSecurityGroup86A59E99",
+      "GroupId"
+     ]
+    },
+    "ToPort": 8000
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/EcsSecurityGroup/from VpcStackAlbSecurityGroupCE60AE76:8000"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/32OwW7CMBBEv4W7Y1L31CNCCOXSRknFtXKchS6EdWTvghDi33EgJbeeduZptHpGm/xd5zN7jplrD1mHjb7WbN1BJfQDzujrpndquaVNuVSlNB26WhoCHtiUKi8M37bpYOITW8ToHVpGT6/xEFZFOZxPy2vLcLYXVQY8pTg9LoghpPw3eJqMbcFJ9fcIxGokSXZFbe+ReJy+ag1OAvJlHbz0D8t/QUG7ADHeVAXRS3AP4S/hXvimyLeg93F+Mrl++9Bmto+IWRBiPIKunvcOhoBSd10BAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "VpcStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "VpcId": {
+   "Description": "VPC ID",
+   "Value": {
+    "Ref": "DjangoVpcB951F8F6"
+   },
+   "Export": {
+    "Name": "VpcStack-VpcId"
+   }
+  },
+  "PrivateSubnetIds": {
+   "Description": "Private Subnet IDs",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Ref": "DjangoVpcPrivateSubnet1Subnet63EC1A79"
+      },
+      ",",
+      {
+       "Ref": "DjangoVpcPrivateSubnet2Subnet66EAD026"
+      }
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "VpcStack-PrivateSubnetIds"
+   }
+  },
+  "PublicSubnetIds": {
+   "Description": "Public Subnet IDs",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Ref": "DjangoVpcPublicSubnet1SubnetCB930176"
+      },
+      ",",
+      {
+       "Ref": "DjangoVpcPublicSubnet2Subnet2911EA14"
+      }
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "VpcStack-PublicSubnetIds"
+   }
+  },
+  "EcsSecurityGroupId": {
+   "Description": "ECS Security Group ID",
+   "Value": {
+    "Fn::GetAtt": [
+     "EcsSecurityGroup44008BF1",
+     "GroupId"
+    ]
+   },
+   "Export": {
+    "Name": "VpcStack-EcsSecurityGroupId"
+   }
+  },
+  "AlbSecurityGroupId": {
+   "Description": "ALB Security Group ID",
+   "Value": {
+    "Fn::GetAtt": [
+     "AlbSecurityGroup86A59E99",
+     "GroupId"
+    ]
+   },
+   "Export": {
+    "Name": "VpcStack-AlbSecurityGroupId"
+   }
+  },
+  "ExportsOutputFnGetAttAlbSecurityGroup86A59E99GroupIdE3A37BC7": {
+   "Value": {
+    "Fn::GetAtt": [
+     "AlbSecurityGroup86A59E99",
+     "GroupId"
+    ]
+   },
+   "Export": {
+    "Name": "VpcStack:ExportsOutputFnGetAttAlbSecurityGroup86A59E99GroupIdE3A37BC7"
+   }
+  },
+  "ExportsOutputRefDjangoVpcPublicSubnet1SubnetCB930176DF896231": {
+   "Value": {
+    "Ref": "DjangoVpcPublicSubnet1SubnetCB930176"
+   },
+   "Export": {
+    "Name": "VpcStack:ExportsOutputRefDjangoVpcPublicSubnet1SubnetCB930176DF896231"
+   }
+  },
+  "ExportsOutputRefDjangoVpcPublicSubnet2Subnet2911EA141A33161A": {
+   "Value": {
+    "Ref": "DjangoVpcPublicSubnet2Subnet2911EA14"
+   },
+   "Export": {
+    "Name": "VpcStack:ExportsOutputRefDjangoVpcPublicSubnet2Subnet2911EA141A33161A"
+   }
+  },
+  "ExportsOutputRefDjangoVpcB951F8F6D6BAD311": {
+   "Value": {
+    "Ref": "DjangoVpcB951F8F6"
+   },
+   "Export": {
+    "Name": "VpcStack:ExportsOutputRefDjangoVpcB951F8F6D6BAD311"
+   }
+  },
+  "ExportsOutputRefDjangoVpcPrivateSubnet1Subnet63EC1A7941157CEC": {
+   "Value": {
+    "Ref": "DjangoVpcPrivateSubnet1Subnet63EC1A79"
+   },
+   "Export": {
+    "Name": "VpcStack:ExportsOutputRefDjangoVpcPrivateSubnet1Subnet63EC1A7941157CEC"
+   }
+  },
+  "ExportsOutputRefDjangoVpcPrivateSubnet2Subnet66EAD026C7AA239D": {
+   "Value": {
+    "Ref": "DjangoVpcPrivateSubnet2Subnet66EAD026"
+   },
+   "Export": {
+    "Name": "VpcStack:ExportsOutputRefDjangoVpcPrivateSubnet2Subnet66EAD026C7AA239D"
+   }
+  },
+  "ExportsOutputFnGetAttEcsSecurityGroup44008BF1GroupIdDE2CA5C5": {
+   "Value": {
+    "Fn::GetAtt": [
+     "EcsSecurityGroup44008BF1",
+     "GroupId"
+    ]
+   },
+   "Export": {
+    "Name": "VpcStack:ExportsOutputFnGetAttEcsSecurityGroup44008BF1GroupIdDE2CA5C5"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

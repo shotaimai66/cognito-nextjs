@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      # Cognito設定（.envファイルから読み込む）
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - COGNITO_CLIENT_SECRET=${COGNITO_CLIENT_SECRET}
+      - COGNITO_REGION=${COGNITO_REGION}
+      - COGNITO_DOMAIN=${COGNITO_DOMAIN}
+      # CORS設定
+      - FRONTEND_URL=${FRONTEND_URL}
+      # Cookie設定
+      - COOKIE_DOMAIN=localhost
+      - COOKIE_SECURE=false
+      - COOKIE_HTTPONLY=true
+      - COOKIE_SAMESITE=lax
+    volumes:
+      # 開発時のホットリロード用（本番では削除）
+      - ./backend/src:/app/src
+      - ./backend/nodemon.json:/app/nodemon.json
+    command: npm run dev
+    networks:
+      - cognito-network
+
+networks:
+  cognito-network:
+    driver: bridge
