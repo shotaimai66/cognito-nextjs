@@ -14,4 +14,16 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
-  buildPath: /
+  customHeaders:
+    - pattern: '**'
+      headers:
+        - key: 'Cache-Control'
+          value: 'public, max-age=0, s-maxage=0, must-revalidate'
+    - pattern: '**/*.js'
+      headers:
+        - key: 'Cache-Control'
+          value: 'public, immutable, max-age=31536000'
+    - pattern: '**/*.css'
+      headers:
+        - key: 'Cache-Control'
+          value: 'public, immutable, max-age=31536000'

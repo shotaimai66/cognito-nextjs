@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // CSRのための設定
+  trailingSlash: true,
 };
 
 export default nextConfig;
